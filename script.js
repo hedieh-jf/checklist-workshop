@@ -54,7 +54,7 @@ let totalItems = 0;
 let stageItemIndices = [];
 
 // ============================================================
-// ۳. ساختار داده اولیه
+// ۳. ساختار داده چک‌لیست
 // ============================================================
 function buildState() {
     checkState = [];
@@ -75,7 +75,35 @@ function buildState() {
 buildState();
 
 // ============================================================
-// ۴. رندر کردن مراحل
+// ۴. مدیریت منو و نمایش صفحات
+// ============================================================
+function showPage(pageName) {
+    // مخفی کردن همه صفحات
+    document.querySelectorAll('.page-content').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // نمایش صفحه مورد نظر
+    const targetPage = document.getElementById(`page-${pageName}`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+    
+    // به‌روزرسانی دکمه‌های منو
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // فعال کردن دکمه مناسب (با استفاده از onclick)
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.textContent.includes(pageName === 'checklist' ? 'چک‌لیست' : 'سیستم')) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+// ============================================================
+// ۵. رندر چک‌لیست
 // ============================================================
 function renderStages() {
     const container = document.getElementById('stagesContainer');
@@ -92,14 +120,12 @@ function renderStages() {
         stageDiv.className = 'stage';
         stageDiv.id = `stage-${si}`;
 
-        // هدر مرحله
         const header = document.createElement('h2');
         const doneInStage = checkState.slice(stageItemIndices[si].start, stageItemIndices[si].end + 1).filter(Boolean).length;
         const totalInStage = stageItemIndices[si].count;
         header.innerHTML = `${stage.name} <span>${doneInStage}/${totalInStage}</span>`;
         stageDiv.appendChild(header);
 
-        // آیتم‌ها با چک‌باکس
         stage.items.forEach((itemText) => {
             const globalIndex = globalIdx;
             
@@ -109,7 +135,6 @@ function renderStages() {
                 itemDiv.classList.add('done');
             }
 
-            // چک‌باکس
             const cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.id = `check-${globalIndex}`;
@@ -118,10 +143,9 @@ function renderStages() {
             cb.addEventListener('change', function(e) {
                 checkState[globalIndex] = e.target.checked;
                 updateAll();
-                saveToLocal();
+                saveChecklist();
             });
 
-            // لیبل
             const label = document.createElement('label');
             label.htmlFor = `check-${globalIndex}`;
             label.textContent = itemText;
@@ -139,7 +163,7 @@ function renderStages() {
 }
 
 // ============================================================
-// ۵. به‌روزرسانی پیشرفت و آمار
+// ۶. به‌روزرسانی پیشرفت چک‌لیست
 // ============================================================
 function updateAll() {
     const done = checkState.filter(v => v).length;
@@ -155,7 +179,6 @@ function updateAll() {
     if (totalCount) totalCount.textContent = totalItems;
     if (percentDisplay) percentDisplay.textContent = percent;
 
-    // به‌روزرسانی هر مرحله
     stagesData.forEach((stage, si) => {
         const { start, end } = stageItemIndices[si];
         const doneInStage = checkState.slice(start, end + 1).filter(Boolean).length;
@@ -176,7 +199,6 @@ function updateAll() {
         }
     });
 
-    // به‌روزرسانی کلاس done روی آیتم‌ها
     document.querySelectorAll('.stage .item').forEach((itemDiv) => {
         const cb = itemDiv.querySelector('input[type="checkbox"]');
         if (cb) {
@@ -190,29 +212,25 @@ function updateAll() {
 }
 
 // ============================================================
-// ۶. ریست / تیک همه
+// ۷. عملیات چک‌لیست
 // ============================================================
 function resetAll(tickAll) {
     for (let i = 0; i < checkState.length; i++) {
         checkState[i] = tickAll;
     }
     renderStages();
-    saveToLocal();
+    saveChecklist();
 }
 
-// ============================================================
-// ۷. ذخیره و بازیابی محلی (LocalStorage)
-// ============================================================
-function saveToLocal() {
+function saveChecklist() {
     try {
         localStorage.setItem('checkState', JSON.stringify(checkState));
-        saveHardware();
     } catch (e) {
-        console.error('❌ خطا در ذخیره:', e);
+        console.error('❌ خطا در ذخیره چک‌لیست:', e);
     }
 }
 
-function loadFromLocal() {
+function loadChecklist() {
     try {
         const saved = localStorage.getItem('checkState');
         if (saved) {
@@ -222,108 +240,266 @@ function loadFromLocal() {
             }
         }
     } catch (e) {
-        console.error('❌ خطا در بارگذاری:', e);
+        console.error('❌ خطا در بارگذاری چک‌لیست:', e);
     }
     renderStages();
-    loadHardware();
 }
 
 // ============================================================
-// ۸. جدول سخت‌افزار
+// ۸. مدیریت سیستم‌ها
 // ============================================================
-function renderHardwareTable() {
-    const tbody = document.getElementById('hwBody');
+const defaultSystems = [
+    { name: 'سیستم ۱', os: 'windows10', ram: '4', gpu: 'Intel HD', hdd: '256', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: 'سیستم ۲', os: 'windows11', ram: '8', gpu: 'NVIDIA GTX', hdd: '512', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: 'سیستم ۳', os: 'windows10', ram: '4', gpu: 'Intel HD', hdd: '256', arch: '32bit', status: 'check', mouse: 'ندارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: 'سیستم ۴', os: 'windows11', ram: '16', gpu: 'AMD Radeon', hdd: '1000', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: 'سیستم ۵', os: 'windows7', ram: '2', gpu: 'Intel', hdd: '160', arch: '32bit', status: 'check', mouse: 'ندارد', keyboard: 'ندارد', monitor: 'دارد' }
+];
+
+function renderSystemsTable() {
+    const tbody = document.getElementById('systemsBody');
     if (!tbody) return;
     
     tbody.innerHTML = '';
 
-    let rows = [];
+    let systems = [];
     try {
-        const saved = localStorage.getItem('hwRows');
+        const saved = localStorage.getItem('systemsData');
         if (saved) {
-            rows = JSON.parse(saved);
+            systems = JSON.parse(saved);
         }
     } catch (e) {
-        console.error('❌ خطا در خواندن جدول:', e);
+        console.error('❌ خطا در خواندن سیستم‌ها:', e);
     }
 
-    if (rows.length === 0) {
-        rows = [
-            { model: 'سیستم ۱', ram: '۴', hdd: '۲۵۶', os: 'Win 10', status: 'سالم' },
-            { model: 'سیستم ۲', ram: '۸', hdd: '۵۱۲', os: 'Win 11', status: 'سالم' },
-            { model: 'سیستم ۳', ram: '۴', hdd: '۲۵۶', os: 'Linux', status: 'نیاز به بررسی' },
-            { model: 'سیستم ۴', ram: '۸', hdd: '۱TB', os: 'Win 10', status: 'سالم' },
-            { model: 'سیستم ۵', ram: '۱۶', hdd: '۵۱۲', os: 'Win 11', status: 'سالم' }
-        ];
+    if (systems.length === 0) {
+        systems = defaultSystems;
+        localStorage.setItem('systemsData', JSON.stringify(systems));
     }
 
-    rows.forEach((row, index) => {
+    systems.forEach((system, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${index + 1}</td>
-            <td><input type="text" value="${row.model || ''}" data-field="model" data-row="${index}"></td>
-            <td><input type="text" value="${row.ram || ''}" data-field="ram" data-row="${index}"></td>
-            <td><input type="text" value="${row.hdd || ''}" data-field="hdd" data-row="${index}"></td>
-            <td><input type="text" value="${row.os || ''}" data-field="os" data-row="${index}"></td>
-            <td><input type="text" value="${row.status || ''}" data-field="status" data-row="${index}"></td>
+            <td><input type="text" value="${system.name || ''}" data-field="name" data-row="${index}"></td>
+            <td>
+                <select data-field="os" data-row="${index}">
+                    <option value="windows7" ${system.os === 'windows7' ? 'selected' : ''}>Windows 7</option>
+                    <option value="windows10" ${system.os === 'windows10' ? 'selected' : ''}>Windows 10</option>
+                    <option value="windows11" ${system.os === 'windows11' ? 'selected' : ''}>Windows 11</option>
+                </select>
+            </td>
+            <td><input type="number" value="${system.ram || ''}" data-field="ram" data-row="${index}" min="0" step="1"></td>
+            <td><input type="text" value="${system.gpu || ''}" data-field="gpu" data-row="${index}"></td>
+            <td><input type="number" value="${system.hdd || ''}" data-field="hdd" data-row="${index}" min="0" step="1"></td>
+            <td>
+                <select data-field="arch" data-row="${index}">
+                    <option value="32bit" ${system.arch === '32bit' ? 'selected' : ''}>۳۲ بیتی</option>
+                    <option value="64bit" ${system.arch === '64bit' ? 'selected' : ''}>۶۴ بیتی</option>
+                </select>
+            </td>
+            <td>
+                <select data-field="status" data-row="${index}">
+                    <option value="healthy" ${system.status === 'healthy' ? 'selected' : ''}>✅ سالم</option>
+                    <option value="check" ${system.status === 'check' ? 'selected' : ''}>⚠️ نیاز به بررسی</option>
+                </select>
+            </td>
+            <td>
+                <select data-field="mouse" data-row="${index}">
+                    <option value="دارد" ${system.mouse === 'دارد' ? 'selected' : ''}>✅ دارد</option>
+                    <option value="ندارد" ${system.mouse === 'ندارد' ? 'selected' : ''}>❌ ندارد</option>
+                </select>
+            </td>
+            <td>
+                <select data-field="keyboard" data-row="${index}">
+                    <option value="دارد" ${system.keyboard === 'دارد' ? 'selected' : ''}>✅ دارد</option>
+                    <option value="ندارد" ${system.keyboard === 'ندارد' ? 'selected' : ''}>❌ ندارد</option>
+                </select>
+            </td>
+            <td>
+                <select data-field="monitor" data-row="${index}">
+                    <option value="دارد" ${system.monitor === 'دارد' ? 'selected' : ''}>✅ دارد</option>
+                    <option value="ندارد" ${system.monitor === 'ندارد' ? 'selected' : ''}>❌ ندارد</option>
+                </select>
+            </td>
+            <td>
+                <button class="delete-btn" onclick="deleteSystem(${index})">🗑️</button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-function saveHardware() {
+// ============================================================
+// ۹. عملیات سیستم‌ها
+// ============================================================
+function getSystemsData() {
+    const systems = [];
+    document.querySelectorAll('#systemsBody tr').forEach(tr => {
+        const inputs = tr.querySelectorAll('input');
+        const selects = tr.querySelectorAll('select');
+        if (inputs.length >= 4 && selects.length >= 5) {
+            systems.push({
+                name: inputs[0].value,
+                os: selects[0].value,
+                ram: inputs[1].value,
+                gpu: inputs[2].value,
+                hdd: inputs[3].value,
+                arch: selects[1].value,
+                status: selects[2].value,
+                mouse: selects[3].value,
+                keyboard: selects[4].value,
+                monitor: selects[5].value
+            });
+        }
+    });
+    return systems;
+}
+
+function saveSystems() {
     try {
-        const rows = [];
-        document.querySelectorAll('#hwBody tr').forEach(tr => {
-            const inputs = tr.querySelectorAll('input');
-            if (inputs.length === 5) {
-                rows.push({
-                    model: inputs[0].value,
-                    ram: inputs[1].value,
-                    hdd: inputs[2].value,
-                    os: inputs[3].value,
-                    status: inputs[4].value
-                });
-            }
+        const systems = getSystemsData();
+        localStorage.setItem('systemsData', JSON.stringify(systems));
+        alert('✅ اطلاعات سیستم‌ها با موفقیت ذخیره شد!');
+    } catch (e) {
+        console.error('❌ خطا در ذخیره سیستم‌ها:', e);
+        alert('❌ خطا در ذخیره اطلاعات!');
+    }
+}
+
+function loadSystems() {
+    renderSystemsTable();
+}
+
+function addSystemRow() {
+    try {
+        const systems = getSystemsData();
+        systems.push({ 
+            name: 'سیستم جدید', 
+            os: 'windows10', 
+            ram: '4', 
+            gpu: '---', 
+            hdd: '256', 
+            arch: '64bit', 
+            status: 'healthy',
+            mouse: 'دارد',
+            keyboard: 'دارد',
+            monitor: 'دارد'
         });
-        localStorage.setItem('hwRows', JSON.stringify(rows));
+        localStorage.setItem('systemsData', JSON.stringify(systems));
+        renderSystemsTable();
+        alert('✅ سیستم جدید اضافه شد!');
     } catch (e) {
-        console.error('❌ خطا در ذخیره جدول:', e);
+        console.error('❌ خطا در افزودن سیستم:', e);
+        alert('❌ خطا در افزودن سیستم!');
     }
 }
 
-function loadHardware() {
-    renderHardwareTable();
-}
-
-function addRow() {
+function deleteSystem(index) {
+    if (!confirm(`آیا از حذف سیستم شماره ${index + 1} مطمئن هستید؟`)) return;
+    
     try {
-        const rows = JSON.parse(localStorage.getItem('hwRows')) || [];
-        rows.push({ model: 'جدید', ram: '۴', hdd: '۲۵۶', os: 'Win 10', status: '---' });
-        localStorage.setItem('hwRows', JSON.stringify(rows));
-        renderHardwareTable();
+        const systems = getSystemsData();
+        systems.splice(index, 1);
+        localStorage.setItem('systemsData', JSON.stringify(systems));
+        renderSystemsTable();
+        alert('✅ سیستم با موفقیت حذف شد!');
     } catch (e) {
-        console.error('❌ خطا در افزودن ردیف:', e);
+        console.error('❌ خطا در حذف سیستم:', e);
+        alert('❌ خطا در حذف سیستم!');
     }
 }
 
+function exportSystems() {
+    try {
+        const systems = getSystemsData();
+        const json = JSON.stringify(systems, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `systems_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('✅ خروجی با موفقیت ایجاد شد!');
+    } catch (e) {
+        console.error('❌ خطا در خروجی:', e);
+        alert('❌ خطا در ایجاد خروجی!');
+    }
+}
+
+function importSystems() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            try {
+                const systems = JSON.parse(ev.target.result);
+                if (Array.isArray(systems) && systems.length > 0) {
+                    localStorage.setItem('systemsData', JSON.stringify(systems));
+                    renderSystemsTable();
+                    alert('✅ اطلاعات با موفقیت وارد شد!');
+                } else {
+                    alert('❌ فرمت فایل نامعتبر است!');
+                }
+            } catch (err) {
+                alert('❌ خطا در خواندن فایل!');
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
 // ============================================================
-// ۹. رویدادها (ذخیره خودکار جدول هنگام تایپ)
+// ۱۰. ذخیره خودکار
 // ============================================================
+document.addEventListener('change', function(e) {
+    if (e.target.closest('#systemsBody input') || e.target.closest('#systemsBody select')) {
+        saveSystems();
+    }
+});
+
 document.addEventListener('input', function(e) {
-    if (e.target.closest('#hwBody input')) {
-        saveHardware();
+    if (e.target.closest('#systemsBody input')) {
+        saveSystems();
     }
 });
 
 // ============================================================
-// ۱۰. بارگذاری اولیه
+// ۱۱. بارگذاری اولیه
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-    loadFromLocal();
+    loadChecklist();
+    loadSystems();
 });
 
 // اگر DOM قبلاً بارگذاری شده بود
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    loadFromLocal();
+    loadChecklist();
+    loadSystems();
 }
+
+// ============================================================
+// ۱۲. مدیریت کلیدهای میانبر
+// ============================================================
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S برای ذخیره چک‌لیست
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveChecklist();
+        alert('✅ چک‌لیست ذخیره شد!');
+    }
+    
+    // Ctrl+Shift+S برای ذخیره سیستم‌ها
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        saveSystems();
+    }
+});
