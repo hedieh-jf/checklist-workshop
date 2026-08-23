@@ -282,6 +282,14 @@ button:active {
     background: #1d4ed8;
 }
 
+.btn-purple {
+    background: #8b5cf6;
+}
+
+.btn-purple:hover {
+    background: #7c3aed;
+}
+
 /* ============================================
    SYSTEMS TABLE
    ============================================ */
