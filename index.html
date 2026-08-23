@@ -3,63 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چک‌لیست تعاملی راه‌اندازی کارگاه کامپیوتر</title>
+    <title>مدیریت کارگاه کامپیوتر</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container" id="app">
-        <h1>🔧 چک‌لیست کارگاه کامپیوتر</h1>
-        <div class="sub">سال تحصیلی جدید - وضعیت را به‌روز کن</div>
+    <div class="container">
+        <!-- هدر -->
+        <header>
+            <h1>🔧 مدیریت کارگاه کامپیوتر</h1>
+            <p class="sub">سال تحصیلی جدید - ابزار جامع مدیریت</p>
+        </header>
 
-        <!-- نوار پیشرفت -->
-        <div class="progress-wrap">
-            <div id="progressBar"></div>
-        </div>
-        
-        <!-- آمار -->
-        <div class="stats">
-            <span>✅ انجام‌شده: <span id="doneCount">0</span> از <span id="totalCount">0</span></span>
-            <span>⏳ درصد پیشرفت: <span id="percentDisplay">۰</span>%</span>
-        </div>
+        <!-- منوی ناوبری -->
+        <nav class="main-nav">
+            <button class="nav-btn active" onclick="showPage('checklist')">
+                📋 چک‌لیست
+            </button>
+            <button class="nav-btn" onclick="showPage('systems')">
+                💻 اطلاعات سیستم‌ها
+            </button>
+        </nav>
 
-        <!-- محتوای چک‌لیست (توسط جاوااسکریپت ساخته می‌شود) -->
-        <div id="stagesContainer"></div>
+        <!-- ============================================ -->
+        <!-- صفحه ۱: چک‌لیست -->
+        <!-- ============================================ -->
+        <div id="page-checklist" class="page-content active">
+            <!-- نوار پیشرفت -->
+            <div class="progress-wrap">
+                <div id="progressBar"></div>
+            </div>
+            
+            <!-- آمار -->
+            <div class="stats">
+                <span>✅ انجام‌شده: <span id="doneCount">0</span> از <span id="totalCount">0</span></span>
+                <span>⏳ درصد پیشرفت: <span id="percentDisplay">۰</span>%</span>
+            </div>
 
-        <!-- دکمه‌های عملیاتی -->
-        <div class="action-buttons">
-            <button class="btn-green" onclick="resetAll(false)">🔄 ریست (همه ناتیک)</button>
-            <button class="btn-blue" onclick="resetAll(true)">✅ تیک همه</button>
-            <button onclick="saveToLocal()">💾 ذخیره در مرورگر</button>
-            <button onclick="window.print()">🖨️ پرینت چک‌لیست</button>
-        </div>
+            <!-- محتوای چک‌لیست -->
+            <div id="stagesContainer"></div>
 
-        <!-- جدول مشخصات سخت‌افزار -->
-        <div class="hardware-table">
-            <h3>📋 دفترچه مشخصات سیستم‌ها (قابل ویرایش)</h3>
-            <table id="hwTable">
-                <thead>
-                    <tr>
-                        <th>شماره</th>
-                        <th>مدل</th>
-                        <th>رم (GB)</th>
-                        <th>هارد (GB)</th>
-                        <th>سیستم‌عامل</th>
-                        <th>وضعیت</th>
-                    </tr>
-                </thead>
-                <tbody id="hwBody">
-                    <!-- ردیف‌ها توسط جاوااسکریپت ساخته می‌شوند -->
-                </tbody>
-            </table>
-            <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
-                <button class="btn-blue" onclick="addRow()">➕ افزودن سیستم</button>
-                <button onclick="saveHardware()">💾 ذخیره جدول</button>
+            <!-- دکمه‌های عملیاتی -->
+            <div class="action-buttons">
+                <button class="btn-green" onclick="resetAll(false)">🔄 ریست (همه ناتیک)</button>
+                <button class="btn-blue" onclick="resetAll(true)">✅ تیک همه</button>
+                <button onclick="saveChecklist()">💾 ذخیره چک‌لیست</button>
+                <button onclick="window.print()">🖨️ پرینت</button>
             </div>
         </div>
-        
-        <div class="print-hint">📌 برای چاپ، از گزینه پرینت مرورگر استفاده کن (Ctrl+P)</div>
+
+        <!-- ============================================ -->
+        <!-- صفحه ۲: اطلاعات سیستم‌ها -->
+        <!-- ============================================ -->
+        <div id="page-systems" class="page-content">
+            <div class="systems-header">
+                <h2>💻 اطلاعات سیستم‌های کارگاه</h2>
+                <button class="btn-blue" onclick="addSystemRow()">➕ افزودن سیستم جدید</button>
+            </div>
+
+            <!-- جدول اطلاعات -->
+            <div class="table-responsive">
+                <table id="systemsTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th style="min-width:100px;">نام سیستم</th>
+                            <th style="min-width:130px;">سیستم‌عامل</th>
+                            <th style="min-width:80px;">رم (GB)</th>
+                            <th style="min-width:120px;">کارت گرافیک</th>
+                            <th style="min-width:80px;">هارد (GB)</th>
+                            <th style="min-width:90px;">معماری</th>
+                            <th style="min-width:120px;">وضعیت</th>
+                            <th style="min-width:80px;">ماوس</th>
+                            <th style="min-width:80px;">کیبورد</th>
+                            <th style="min-width:80px;">مانیتور</th>
+                            <th style="width:60px;">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="systemsBody">
+                        <!-- ردیف‌ها توسط جاوااسکریپت ساخته می‌شوند -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="systems-actions">
+                <button onclick="saveSystems()" class="btn-green">💾 ذخیره همه اطلاعات</button>
+                <button onclick="exportSystems()" class="btn-blue">📤 خروجی JSON</button>
+                <button onclick="importSystems()" class="btn-blue">📥 ورودی JSON</button>
+            </div>
+        </div>
+
+        <!-- فوتر -->
+        <footer class="print-hint">
+            📌 داده‌ها به‌صورت خودکار در مرورگر ذخیره می‌شوند
+        </footer>
     </div>
 
     <script src="script.js"></script>
 </body>
-  </html>
+</html>
