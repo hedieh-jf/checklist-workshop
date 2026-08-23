@@ -78,23 +78,19 @@ buildState();
 // ۴. مدیریت منو و نمایش صفحات
 // ============================================================
 function showPage(pageName) {
-    // مخفی کردن همه صفحات
     document.querySelectorAll('.page-content').forEach(page => {
         page.classList.remove('active');
     });
     
-    // نمایش صفحه مورد نظر
     const targetPage = document.getElementById(`page-${pageName}`);
     if (targetPage) {
         targetPage.classList.add('active');
     }
     
-    // به‌روزرسانی دکمه‌های منو
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    // فعال کردن دکمه مناسب (با استفاده از onclick)
     document.querySelectorAll('.nav-btn').forEach(btn => {
         if (btn.textContent.includes(pageName === 'checklist' ? 'چک‌لیست' : 'سیستم')) {
             btn.classList.add('active');
@@ -458,48 +454,23 @@ function importSystems() {
 }
 
 // ============================================================
-// ۱۰. ذخیره خودکار
+// ۱۰. چاپ گزارش کامل سیستم‌ها
 // ============================================================
-document.addEventListener('change', function(e) {
-    if (e.target.closest('#systemsBody input') || e.target.closest('#systemsBody select')) {
-        saveSystems();
-    }
-});
-
-document.addEventListener('input', function(e) {
-    if (e.target.closest('#systemsBody input')) {
-        saveSystems();
-    }
-});
-
-// ============================================================
-// ۱۱. بارگذاری اولیه
-// ============================================================
-document.addEventListener('DOMContentLoaded', function() {
-    loadChecklist();
-    loadSystems();
-});
-
-// اگر DOM قبلاً بارگذاری شده بود
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    loadChecklist();
-    loadSystems();
-}
-
-// ============================================================
-// ۱۲. مدیریت کلیدهای میانبر
-// ============================================================
-document.addEventListener('keydown', function(e) {
-    // Ctrl+S برای ذخیره چک‌لیست
-    if (e.ctrlKey && e.key === 's') {
-        e.preventDefault();
-        saveChecklist();
-        alert('✅ چک‌لیست ذخیره شد!');
+function printReport() {
+    const systems = getSystemsData();
+    
+    if (systems.length === 0) {
+        alert('❌ هیچ سیستمی برای چاپ وجود ندارد!');
+        return;
     }
     
-    // Ctrl+Shift+S برای ذخیره سیستم‌ها
-    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
-        e.preventDefault();
-        saveSystems();
-    }
-});
+    const printWindow = window.open('', '_blank', 'width=1200,height=800');
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl" lang="fa">
+        <head>
+            <meta charset="UTF-8">
+            <title>گزارش اطلاعات سیستم‌های کارگاه</title>
+            <style>
+                * { margin: 0; padding: 0
