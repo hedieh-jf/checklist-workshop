@@ -473,4 +473,231 @@ function printReport() {
             <meta charset="UTF-8">
             <title>گزارش اطلاعات سیستم‌های کارگاه</title>
             <style>
-                * { margin: 0; padding: 0
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Segoe UI', Tahoma, sans-serif;
+                    padding: 30px;
+                    background: white;
+                    color: #1e293b;
+                }
+                .report-header {
+                    text-align: center;
+                    border-bottom: 3px solid #2563eb;
+                    padding-bottom: 20px;
+                    margin-bottom: 25px;
+                }
+                .report-header h1 {
+                    font-size: 24px;
+                    color: #0f3b5e;
+                }
+                .report-header p {
+                    color: #64748b;
+                    margin-top: 5px;
+                    font-size: 14px;
+                }
+                .report-meta {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                    color: #475569;
+                    background: #f8fafc;
+                    padding: 10px 15px;
+                    border-radius: 8px;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 13px;
+                }
+                th, td {
+                    border: 1px solid #cbd5e1;
+                    padding: 8px 10px;
+                    text-align: center;
+                }
+                th {
+                    background: #e9edf2;
+                    color: #0f3b5e;
+                    font-weight: 600;
+                }
+                .status-healthy {
+                    color: #16a34a;
+                    font-weight: 600;
+                }
+                .status-check {
+                    color: #dc2626;
+                    font-weight: 600;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 25px;
+                    padding-top: 15px;
+                    border-top: 1px solid #e2e8f0;
+                    color: #94a3b8;
+                    font-size: 12px;
+                }
+                .summary {
+                    display: flex;
+                    justify-content: center;
+                    gap: 30px;
+                    margin: 20px 0;
+                    flex-wrap: wrap;
+                }
+                .summary-box {
+                    background: #f8fafc;
+                    padding: 10px 20px;
+                    border-radius: 10px;
+                    text-align: center;
+                    min-width: 100px;
+                }
+                .summary-box .number {
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #2563eb;
+                }
+                .summary-box .label {
+                    font-size: 12px;
+                    color: #64748b;
+                }
+                @media print {
+                    body { padding: 15px; }
+                }
+                @media (max-width: 600px) {
+                    table { font-size: 11px; }
+                    th, td { padding: 4px 6px; }
+                    .report-meta { flex-direction: column; align-items: center; }
+                    .summary { gap: 15px; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="report-header">
+                <h1>📋 گزارش اطلاعات سیستم‌های کارگاه</h1>
+                <p>تاریخ: ${new Date().toLocaleDateString('fa-IR')} - ساعت: ${new Date().toLocaleTimeString('fa-IR')}</p>
+            </div>
+            
+            <div class="report-meta">
+                <span>📊 تعداد کل سیستم‌ها: ${systems.length}</span>
+                <span>✅ سالم: ${systems.filter(s => s.status === 'healthy').length}</span>
+                <span>⚠️ نیاز به بررسی: ${systems.filter(s => s.status === 'check').length}</span>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>نام سیستم</th>
+                        <th>سیستم‌عامل</th>
+                        <th>رم (GB)</th>
+                        <th>کارت گرافیک</th>
+                        <th>هارد (GB)</th>
+                        <th>معماری</th>
+                        <th>وضعیت</th>
+                        <th>ماوس</th>
+                        <th>کیبورد</th>
+                        <th>مانیتور</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${systems.map((sys, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${sys.name || '-'}</td>
+                            <td>${sys.os === 'windows7' ? 'Windows 7' : sys.os === 'windows10' ? 'Windows 10' : 'Windows 11'}</td>
+                            <td>${sys.ram || '-'}</td>
+                            <td>${sys.gpu || '-'}</td>
+                            <td>${sys.hdd || '-'}</td>
+                            <td>${sys.arch === '32bit' ? '۳۲ بیتی' : '۶۴ بیتی'}</td>
+                            <td class="${sys.status === 'healthy' ? 'status-healthy' : 'status-check'}">${sys.status === 'healthy' ? '✅ سالم' : '⚠️ نیاز به بررسی'}</td>
+                            <td>${sys.mouse === 'دارد' ? '✅' : '❌'}</td>
+                            <td>${sys.keyboard === 'دارد' ? '✅' : '❌'}</td>
+                            <td>${sys.monitor === 'دارد' ? '✅' : '❌'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            
+            <div class="summary">
+                <div class="summary-box">
+                    <div class="number">${systems.filter(s => s.status === 'healthy').length}</div>
+                    <div class="label">✅ سیستم سالم</div>
+                </div>
+                <div class="summary-box">
+                    <div class="number">${systems.filter(s => s.status === 'check').length}</div>
+                    <div class="label">⚠️ نیاز به بررسی</div>
+                </div>
+                <div class="summary-box">
+                    <div class="number">${systems.filter(s => s.mouse === 'دارد').length}</div>
+                    <div class="label">🖱️ ماوس دارد</div>
+                </div>
+                <div class="summary-box">
+                    <div class="number">${systems.filter(s => s.keyboard === 'دارد').length}</div>
+                    <div class="label">⌨️ کیبورد دارد</div>
+                </div>
+                <div class="summary-box">
+                    <div class="number">${systems.filter(s => s.monitor === 'دارد').length}</div>
+                    <div class="label">🖥️ مانیتور دارد</div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                این گزارش به‌صورت خودکار از سیستم مدیریت کارگاه تهیه شده است.
+            </div>
+            
+            <script>
+                window.onload = function() {
+                    window.print();
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+}
+
+// ============================================================
+// ۱۱. ذخیره خودکار
+// ============================================================
+document.addEventListener('change', function(e) {
+    if (e.target.closest('#systemsBody input') || e.target.closest('#systemsBody select')) {
+        saveSystems();
+    }
+});
+
+document.addEventListener('input', function(e) {
+    if (e.target.closest('#systemsBody input')) {
+        saveSystems();
+    }
+});
+
+// ============================================================
+// ۱۲. بارگذاری اولیه
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    loadChecklist();
+    loadSystems();
+});
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    loadChecklist();
+    loadSystems();
+}
+
+// ============================================================
+// ۱۳. کلیدهای میانبر
+// ============================================================
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveChecklist();
+        alert('✅ چک‌لیست ذخیره شد!');
+    }
+    
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        saveSystems();
+    }
+});
