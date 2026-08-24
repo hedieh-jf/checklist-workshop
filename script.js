@@ -242,14 +242,14 @@ function loadChecklist() {
 }
 
 // ============================================================
-// ۸. مدیریت سیستم‌ها
+// ۸. مدیریت سیستم‌ها (با نام خالی)
 // ============================================================
 const defaultSystems = [
-    { name: 'سیستم ۱', os: 'windows10', ram: '4', gpu: 'Intel HD', hdd: '256', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
-    { name: 'سیستم ۲', os: 'windows11', ram: '8', gpu: 'NVIDIA GTX', hdd: '512', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
-    { name: 'سیستم ۳', os: 'windows10', ram: '4', gpu: 'Intel HD', hdd: '256', arch: '32bit', status: 'check', mouse: 'ندارد', keyboard: 'دارد', monitor: 'دارد' },
-    { name: 'سیستم ۴', os: 'windows11', ram: '16', gpu: 'AMD Radeon', hdd: '1000', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
-    { name: 'سیستم ۵', os: 'windows7', ram: '2', gpu: 'Intel', hdd: '160', arch: '32bit', status: 'check', mouse: 'ندارد', keyboard: 'ندارد', monitor: 'دارد' }
+    { name: '', os: 'windows10', ram: '4', gpu: 'Intel HD', hdd: '256', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: '', os: 'windows11', ram: '8', gpu: 'NVIDIA GTX', hdd: '512', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: '', os: 'windows10', ram: '4', gpu: 'Intel HD', hdd: '256', arch: '32bit', status: 'check', mouse: 'ندارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: '', os: 'windows11', ram: '16', gpu: 'AMD Radeon', hdd: '1000', arch: '64bit', status: 'healthy', mouse: 'دارد', keyboard: 'دارد', monitor: 'دارد' },
+    { name: '', os: 'windows7', ram: '2', gpu: 'Intel', hdd: '160', arch: '32bit', status: 'check', mouse: 'ندارد', keyboard: 'ندارد', monitor: 'دارد' }
 ];
 
 function renderSystemsTable() {
@@ -277,7 +277,7 @@ function renderSystemsTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${index + 1}</td>
-            <td><input type="text" value="${system.name || ''}" data-field="name" data-row="${index}"></td>
+            <td><input type="text" value="${system.name || ''}" data-field="name" data-row="${index}" placeholder="نام سیستم را وارد کنید"></td>
             <td>
                 <select data-field="os" data-row="${index}">
                     <option value="windows7" ${system.os === 'windows7' ? 'selected' : ''}>Windows 7</option>
@@ -285,9 +285,9 @@ function renderSystemsTable() {
                     <option value="windows11" ${system.os === 'windows11' ? 'selected' : ''}>Windows 11</option>
                 </select>
             </td>
-            <td><input type="number" value="${system.ram || ''}" data-field="ram" data-row="${index}" min="0" step="1"></td>
-            <td><input type="text" value="${system.gpu || ''}" data-field="gpu" data-row="${index}"></td>
-            <td><input type="number" value="${system.hdd || ''}" data-field="hdd" data-row="${index}" min="0" step="1"></td>
+            <td><input type="number" value="${system.ram || ''}" data-field="ram" data-row="${index}" min="0" step="1" placeholder="مثلاً 8"></td>
+            <td><input type="text" value="${system.gpu || ''}" data-field="gpu" data-row="${index}" placeholder="مثلاً NVIDIA GTX"></td>
+            <td><input type="number" value="${system.hdd || ''}" data-field="hdd" data-row="${index}" min="0" step="1" placeholder="مثلاً 512"></td>
             <td>
                 <select data-field="arch" data-row="${index}">
                     <option value="32bit" ${system.arch === '32bit' ? 'selected' : ''}>۳۲ بیتی</option>
@@ -327,7 +327,7 @@ function renderSystemsTable() {
 }
 
 // ============================================================
-// ۹. عملیات سیستم‌ها
+// ۹. عملیات سیستم‌ها (بدون ذخیره خودکار)
 // ============================================================
 function getSystemsData() {
     const systems = [];
@@ -354,7 +354,17 @@ function getSystemsData() {
 
 function saveSystems() {
     try {
+        // بررسی کنید که آیا نام سیستم‌ها وارد شده است یا خیر
         const systems = getSystemsData();
+        const emptyNames = systems.some(sys => sys.name.trim() === '');
+        
+        if (emptyNames) {
+            const confirmSave = confirm('⚠️ برخی از سیستم‌ها نام ندارند! آیا مطمئن هستید که می‌خواهید ذخیره کنید؟');
+            if (!confirmSave) {
+                return;
+            }
+        }
+        
         localStorage.setItem('systemsData', JSON.stringify(systems));
         alert('✅ اطلاعات سیستم‌ها با موفقیت ذخیره شد!');
     } catch (e) {
@@ -371,7 +381,7 @@ function addSystemRow() {
     try {
         const systems = getSystemsData();
         systems.push({ 
-            name: 'سیستم جدید', 
+            name: '', 
             os: 'windows10', 
             ram: '4', 
             gpu: '---', 
@@ -384,7 +394,7 @@ function addSystemRow() {
         });
         localStorage.setItem('systemsData', JSON.stringify(systems));
         renderSystemsTable();
-        alert('✅ سیستم جدید اضافه شد!');
+        alert('✅ ردیف جدید اضافه شد! لطفاً نام سیستم را وارد کنید.');
     } catch (e) {
         console.error('❌ خطا در افزودن سیستم:', e);
         alert('❌ خطا در افزودن سیستم!');
@@ -659,22 +669,7 @@ function printReport() {
 }
 
 // ============================================================
-// ۱۱. ذخیره خودکار
-// ============================================================
-document.addEventListener('change', function(e) {
-    if (e.target.closest('#systemsBody input') || e.target.closest('#systemsBody select')) {
-        saveSystems();
-    }
-});
-
-document.addEventListener('input', function(e) {
-    if (e.target.closest('#systemsBody input')) {
-        saveSystems();
-    }
-});
-
-// ============================================================
-// ۱۲. بارگذاری اولیه
+// ۱۱. بارگذاری اولیه
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     loadChecklist();
@@ -687,7 +682,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 }
 
 // ============================================================
-// ۱۳. کلیدهای میانبر
+// ۱۲. کلیدهای میانبر
 // ============================================================
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.key === 's') {
